@@ -1,186 +1,184 @@
-<!--Here is the page for the students to register with validation of age and password-->
+<!--
+  Register.vue  Student registration page.
+  When a student fills in this form and clicks "Create account":
+  1. Firebase Authentication creates their login account
+  2. A Firestore document is automatically saved with their details
+  3. A verification email is sent to them
+  4. They are redirected to the login page
+  Everything happens automatically no manual Firebase work needed.
+-->
 <template>
-  <div class="mx-auto max-w-5xl px-4 py-6">
-    <h1 class="mb-2 text-2xl font-semibold md:text-3xl">Student Registration</h1>
+  <div class="mx-auto max-w-5xl px-4 py-6 pt-20">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 md:text-3xl">Student Registration</h1>
+      <p class="mt-1 text-sm text-gray-500">Create your account to start volunteering. Must be 18 or older.</p>
+    </div>
 
-    <p class="text-slate-400">
-      Please note, we can only accept applications from those over 18 years old.
-    </p>
-<!--This is the overall registration form to collect all of the students details -->
-    <div class="mt-4 max-w-xl space-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-      <label class="block text-sm font-semibold text-slate-200">First name</label>
-      <input
-        v-model="firstName"
-        type="text"
-        class="w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
+    <div class="max-w-xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div class="space-y-4">
 
-      <label class="block text-sm font-semibold text-slate-200">Last name</label>
-      <input
-        v-model="lastName"
-        type="text"
-        class="w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">First name</label>
+          <input v-model="firstName" type="text" placeholder="e.g. Jane"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        </div>
 
-      <label class="block text-sm font-semibold text-slate-200">Email</label>
-      <input
-        v-model="email"
-        type="email"
-        class="w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Last name</label>
+          <input v-model="lastName" type="text" placeholder="e.g. Smith"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        </div>
 
-      <label class="block text-sm font-semibold text-slate-200">Confirm email</label>
-      <input
-        v-model="confirmEmail"
-        type="email"
-        class="w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Email</label>
+          <input v-model="email" type="email" placeholder="e.g. name@gmail.com"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+          <p class="mt-1 text-xs text-gray-400">Enter a valid email address e.g. name@gmail.com</p>
+        </div>
 
-      <label class="block text-sm font-semibold text-slate-200">Date of birth</label>
-      <input
-        v-model="dob"
-        type="date"
-        class="w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Confirm email</label>
+          <input v-model="confirmEmail" type="email" placeholder="Re-enter your email"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+          <!-- Live email match indicator -->
+          <p v-if="confirmEmail && email" class="mt-1 text-xs" :class="email === confirmEmail ? 'text-green-600' : 'text-red-500'">
+            {{ email === confirmEmail ? 'Emails match' : 'Emails do not match' }}
+          </p>
+        </div>
 
-      <label class="block text-sm font-semibold text-slate-200">Password (min 6 characters, 1 special)</label>
-      <input
-        v-model="password"
-        type="password"
-        class="w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
-<!--This shows all of the validation or the errors in registration-->
-      <div
-        v-if="error"
-        class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200"
-      >
-        {{ error }}
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Date of birth</label>
+          <input v-model="dob" type="date"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+          <p class="mt-1 text-xs text-gray-400">You must be at least 18 years old to register.</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Password</label>
+          <input v-model="password" type="password" placeholder="Create a password"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+
+          <!-- Password rules — tick green as requirements are met -->
+          <div class="mt-2 space-y-1">
+            <p class="flex items-center gap-1.5 text-xs" :class="password.length >= 6 ? 'text-green-600' : 'text-gray-400'">
+              <span>{{ password.length >= 6 ? '✓' : '○' }}</span> At least 6 characters
+            </p>
+            <p class="flex items-center gap-1.5 text-xs" :class="hasSpecialChar ? 'text-green-600' : 'text-gray-400'">
+              <span>{{ hasSpecialChar ? '✓' : '○' }}</span> At least 1 special character (e.g. ! @ # $)
+            </p>
+          </div>
+
+          <!-- Password strength bar — updates as the user types -->
+          <div v-if="password.length > 0" class="mt-2">
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+              <div class="h-full rounded-full transition-all duration-300" :class="strengthBarColor" :style="{ width: strengthPercent + '%' }"></div>
+            </div>
+            <p class="mt-1 text-xs" :class="strengthTextColor">{{ strengthLabel }}</p>
+          </div>
+        </div>
+
+        <!-- Validation errors and success messages -->
+        <div v-if="error" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</div>
+        <div v-if="success" class="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">{{ success }}</div>
+
+        <button
+          class="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+          :disabled="loading" @click="register"
+        >
+          {{ loading ? 'Creating account…' : 'Create account' }}
+        </button>
+
+        <p class="text-center text-sm text-gray-500">
+          Already have an account?
+          <router-link to="/login" class="font-semibold text-blue-600 hover:text-blue-800">Login</router-link>
+        </p>
       </div>
-<!--This shows successful regisatration prompt-->
-      <div
-        v-if="success"
-        class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200"
-      >
-        {{ success }}
-      </div>
-<!--This submits the registration data to create an account and the validation-->
-      <button
-        class="inline-flex items-center justify-center rounded-lg border border-indigo-600 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
-        @click="register"
-      >
-        Create account
-      </button>
-
-      <p class="text-sm text-slate-400">
-        Already have an account?
-        <router-link to="/login">Login</router-link>
-      </p>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from "vue"
+import { ref, computed } from "vue"
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth"
 import { db } from "../firebase"
 import { doc, setDoc } from "firebase/firestore"
-// Here are all of the vue and the firebase imports for the student to register and the data storage 
+
 export default {
   setup() {
-    const firstName = ref("")
-    const lastName = ref("")
-    const email = ref("")
-    const confirmEmail = ref("")
-    const dob = ref("")
-    const password = ref("")
-    const error = ref("")
-    const success = ref("")
-// This is where all of the user input alongside the feedback is stored for the registering form
+    // Form fields
+    const firstName = ref(""), lastName = ref(""), email = ref(""), confirmEmail = ref("")
+    const dob = ref(""), password = ref(""), error = ref(""), success = ref(""), loading = ref(false)
+
+    // Check if password contains at least one special character
+    const hasSpecialChar = computed(() => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password.value))
+
+    // Calculate password strength score out of 4
+    const strengthScore = computed(() => {
+      let s = 0
+      if (password.value.length >= 6)  s++
+      if (password.value.length >= 10) s++
+      if (hasSpecialChar.value)        s++
+      if (/[A-Z]/.test(password.value)) s++
+      return s
+    })
+
+    // Convert strength score to a percentage for the progress bar
+    const strengthPercent   = computed(() => !password.value.length ? 0 : Math.min((strengthScore.value / 4) * 100, 100))
+    const strengthLabel     = computed(() => ["Weak", "Fair", "Good", "Strong"][Math.min(strengthScore.value - 1, 3)] || "Weak")
+    const strengthBarColor  = computed(() => ["bg-red-400", "bg-yellow-400", "bg-blue-500", "bg-green-500"][Math.min(strengthScore.value - 1, 3)] || "bg-red-400")
+    const strengthTextColor = computed(() => ["text-red-500", "text-yellow-600", "text-blue-600", "text-green-600"][Math.min(strengthScore.value - 1, 3)] || "text-red-500")
+
     const register = async () => {
-      error.value = ""
-      success.value = ""
-// This allows to make a new student account as well as storing the data and validating all of the input 
-      if (!firstName.value || !lastName.value) {
-        error.value = "Please enter your first and last name."
-        return
-      }
+      error.value = ""; success.value = ""
 
-      if (email.value !== confirmEmail.value) {
-        error.value = "Email addresses do not match."
-        return
-      }
+      // Validate all fields before sending to Firebase
+      if (!firstName.value || !lastName.value) { error.value = "Please enter your first and last name."; return }
+      if (!email.value) { error.value = "Please enter your email."; return }
+      if (!email.value.includes("@") || !email.value.includes(".")) { error.value = "Please enter a valid email address."; return }
+      if (email.value !== confirmEmail.value) { error.value = "Email addresses do not match."; return }
+      if (!dob.value) { error.value = "Please enter your date of birth."; return }
 
-      if (!dob.value) {
-        error.value = "Please enter your date of birth."
-        return
-      }
-// This is where the calculation is done in order to implement the age requirement is 18 years
-      const today = new Date()
-      const birthDate = new Date(dob.value)
-      const age = today.getFullYear() - birthDate.getFullYear()
-      const monthDiff = today.getMonth() - birthDate.getMonth()
-      const dayDiff = today.getDate() - birthDate.getDate()
-      const isUnder18 =
-        age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)))
+      // Check the student is at least 18 years old
+      const today = new Date(), b = new Date(dob.value)
+      const age = today.getFullYear() - b.getFullYear()
+      const under18 = age < 18 || (age === 18 && (today.getMonth() < b.getMonth() || (today.getMonth() === b.getMonth() && today.getDate() < b.getDate())))
+      if (under18) { error.value = "You must be at least 18 years old to register."; return }
 
-      if (isUnder18) {
-        error.value = "You must be at least 18 years old to register."
-        return
-      }
+      // Validate password requirements
+      if (password.value.length < 6) { error.value = "Password must be at least 6 characters."; return }
+      if (!hasSpecialChar.value) { error.value = "Password must include at least one special character."; return }
 
-      if (password.value.length < 6) {
-        error.value = "Password must be at least 6 characters."
-        return
-      }
-
-      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password.value)) {
-        error.value = "Password must include at least one special character."
-        return
-      }
-// This is where a new authenticated user is created correctly and this is done by using firebase authentication
+      loading.value = true
       try {
-        const auth = getAuth()
-        const cred = await createUserWithEmailAndPassword(
-          auth,
-          email.value,
-          password.value
-        )
-// This is where the additional user profile is stored within firestore 
+        // Create the Firebase Authentication account
+        const cred = await createUserWithEmailAndPassword(getAuth(), email.value, password.value)
+
+        // Save the student's profile to Firestore automatically — no manual Firebase work needed
         await setDoc(doc(db, "users", cred.user.uid), {
-          firstName: firstName.value,
-          lastName: lastName.value,
-          dob: dob.value,
-          role: "student",
-          points: 0,
-          quizScore: 0,
+          firstName:          firstName.value,
+          lastName:           lastName.value,
+          dob:                dob.value,
+          role:               "student",         // always student for self-registered accounts
+          points:             0,
+          quizScore:          null,              // null means quiz not taken yet
           totalHoursApproved: 0
         })
 
+        // Send email verification and sign out they must verify before logging in
         await sendEmailVerification(cred.user)
         await signOut(getAuth())
-        sessionStorage.setItem(
-          "registerSuccess",
-          "Registered successfully. Redirecting to the login page..."
-        )
-        setTimeout(() => {
-          window.location.href = "/login"
-        }, 1500)
+
+        // Pass success message to the login page via sessionStorage
+        sessionStorage.setItem("registerSuccess", "Account created! Please verify your email then log in.")
+        setTimeout(() => { window.location.href = "/login" }, 1500)
       } catch (err) {
-        error.value = err.message
-      }
+        error.value = err.code === "auth/email-already-in-use"
+          ? "An account with this email already exists."
+          : err.message
+      } finally { loading.value = false }
     }
 
-    return {
-      firstName,
-      lastName,
-      email,
-      confirmEmail,
-      dob,
-      password,
-      success,
-      error,
-      register
-    }
+    return { firstName, lastName, email, confirmEmail, dob, password, error, success, loading, hasSpecialChar, strengthPercent, strengthLabel, strengthBarColor, strengthTextColor, register }
   }
 }
 </script>

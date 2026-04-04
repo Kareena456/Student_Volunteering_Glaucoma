@@ -1,131 +1,191 @@
-<!--This is the main login page allowing the students and the admi to sign in too-->
+<!-- Login page for students and organisations -->
 <template>
-  <div class="mx-auto max-w-5xl px-4 py-6">
-    <h1 class="mb-2 text-2xl font-semibold md:text-3xl">Login</h1>
-    <p class="text-slate-400">Sign in to your account.</p>
-<!--This is the main login form for the email and the password authentication-->
-    <div class="mt-4 max-w-xl rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-      <label class="block text-sm font-semibold text-slate-200">Email</label>
-      <input
-        type="email"
-        v-model="email"
-        placeholder="name@student.ac.uk"
-        class="mt-2 w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
+  <div class="mx-auto max-w-5xl px-4 py-6 pt-20">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 md:text-3xl">Login</h1>
+      <p class="mt-1 text-sm text-gray-500">Sign in to your account.</p>
+    </div>
 
-      <label class="mt-4 block text-sm font-semibold text-slate-200">Password</label>
-      <input
-        type="password"
-        v-model="password"
-        placeholder="Password"
-        ref="passwordInput"
-        class="mt-2 w-full rounded-lg border border-slate-800 bg-transparent px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-      />
-<!--This is the authentication and navigaion actions -->
-      <div class="mt-4 flex flex-wrap gap-3">
+    <div class="max-w-xl space-y-4">
+
+      <!-- Switch between student and organisation login -->
+      <div v-if="!showForgot" class="flex gap-3">
         <button
-          class="inline-flex items-center justify-center rounded-lg border border-indigo-600 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
-          @click="login"
+          class="flex-1 rounded-xl border px-4 py-3 text-sm font-semibold transition"
+          :class="loginType === 'student' ? 'border-blue-500 bg-blue-600 text-white' : 'border-gray-200 bg-white text-gray-500 hover:border-blue-300'"
+          @click="loginType = 'student'"
         >
-          Login
+          Student Login
         </button>
         <button
-          class="inline-flex items-center justify-center rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-indigo-400"
-          @click="useAdminLogin"
+          class="flex-1 rounded-xl border px-4 py-3 text-sm font-semibold transition"
+          :class="loginType === 'organisation' ? 'border-blue-500 bg-blue-600 text-white' : 'border-gray-200 bg-white text-gray-500 hover:border-blue-300'"
+          @click="loginType = 'organisation'"
         >
-          Admin login
+          Organisation Login
         </button>
-        <router-link
-          to="/register"
-          class="inline-flex items-center justify-center rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-indigo-400"
-        >
-          Register
-        </router-link>
-      </div>
-<!--This enables the users to ask to reset their password-->
-      <button
-        class="mt-3 text-sm text-indigo-400 hover:text-indigo-300"
-        @click="resetPassword"
-      >
-        Forgot password?
-      </button>
-
-      <div
-        v-if="error"
-        class="mt-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200"
-      >
-        {{ error }}
       </div>
 
-      <div
-        v-if="success"
-        class="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200"
-      >
-        {{ success }}
+      <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+
+        <!-- Main login form -->
+        <template v-if="!showForgot">
+          <p class="mb-4 text-sm text-gray-500">
+            {{ loginType === 'student' ? 'Sign in as a student volunteer.' : 'Sign in as a volunteering hub organisation.' }}
+          </p>
+
+          <label class="block text-sm font-semibold text-gray-700">Email</label>
+          <input
+            type="email" v-model="email" placeholder="name@email.com"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            @keydown.enter="login"
+          />
+
+          <label class="mt-4 block text-sm font-semibold text-gray-700">Password</label>
+          <input
+            type="password" v-model="password" placeholder="Password"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            @keydown.enter="login"
+          />
+
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button
+              class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+              :disabled="loading" @click="login"
+            >
+              {{ loading ? 'Logging in…' : 'Login' }}
+            </button>
+            <!-- Register only available for students — organisations contact us -->
+            <router-link
+              v-if="loginType === 'student'" to="/register"
+              class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            >
+              Register
+            </router-link>
+          </div>
+
+          <button class="mt-3 text-sm text-blue-600 hover:text-blue-800" @click="openForgot">
+            Forgot password?
+          </button>
+
+          <!-- Contact message for new organisations wanting to join -->
+          <div v-if="loginType === 'organisation'" class="mt-4 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5 text-sm text-blue-700">
+            Don't have an account? If you are a volunteering organisation email us at
+            <a href="mailto:karinkg1924@icloud.com" class="font-semibold underline hover:text-blue-900">karinkg1924@icloud.com</a>
+            to apply for access.
+          </div>
+        </template>
+
+        <!-- Forgot password panel -->
+        <template v-else>
+          <button class="mb-4 text-sm text-gray-500 hover:text-gray-700" @click="closeForgot">← Back to login</button>
+          <h2 class="text-base font-semibold text-gray-900">Reset your password</h2>
+          <p class="mt-1 text-sm text-gray-500">Enter your email and we'll send you a reset link.</p>
+
+          <label class="mt-4 block text-sm font-semibold text-gray-700">Email address</label>
+          <input
+            type="email" v-model="resetEmail" placeholder="name@email.com"
+            class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            @keydown.enter="sendReset"
+          />
+
+          <button
+            class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+            :disabled="sendingReset" @click="sendReset"
+          >
+            {{ sendingReset ? 'Sending…' : 'Send reset email' }}
+          </button>
+
+          <div v-if="resetSuccess" class="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+            Reset email sent! Check your inbox.
+            <br /><button class="mt-1 text-green-700 underline" @click="closeForgot">Back to login</button>
+          </div>
+          <div v-if="resetError" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{{ resetError }}</div>
+        </template>
+
+        <!-- Error and success messages -->
+        <template v-if="!showForgot">
+          <div v-if="error" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</div>
+          <div v-if="success" class="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">{{ success }}</div>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"
-// This line of code is the firebase autentication functions for the login and the password recovery 
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "firebase/auth"
+import { db } from "../firebase"
+import { doc, getDoc } from "firebase/firestore"
+
 export default {
   data() {
-    return { email: "", password: "", error: "", success: "" }
+    return {
+      loginType: "student",
+      email: "", password: "", error: "", success: "", loading: false,
+      showForgot: false, resetEmail: "", resetError: "", resetSuccess: false, sendingReset: false
+    }
   },
+
   mounted() {
+    // Show success message passed from the Register page
     const msg = sessionStorage.getItem("registerSuccess")
     if (msg) {
       this.success = msg
       sessionStorage.removeItem("registerSuccess")
-      setTimeout(() => {
-        this.success = ""
-      }, 4000)
+      setTimeout(() => { this.success = "" }, 4000)
     }
   },
+
   methods: {
-   async login() {
-  this.error = ""
-  this.success = ""
-  try {
-    const auth = getAuth()
-    const cred = await signInWithEmailAndPassword(
-      auth,
-      this.email,
-      this.password
-    )
-    this.$router.push("/dashboard")
-  } catch (err) {
-    if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-      this.error = "Incorrect password. Please try again."
-    } else {
-      this.error = err.message
+    async login() {
+      this.error = ""; this.success = ""; this.loading = true
+      try {
+        const auth = getAuth()
+        const cred = await signInWithEmailAndPassword(auth, this.email, this.password)
+        const user = cred.user
+
+        // Block login if the student hasn't verified their email yet
+        if (!user.emailVerified) {
+          this.error = "Please verify your email before logging in. Check your inbox for a verification link."
+          await signOut(auth)
+          return
+        }
+
+        // Read the user's role from Firestore and redirect accordingly
+        const snap = await getDoc(doc(db, "users", user.uid))
+        const role = (snap.data() || {}).role || "student"
+        this.$router.push(role === "organisation" ? "/organisation" : "/dashboard")
+      } catch (err) {
+        if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+          this.error = "Incorrect password. Please try again."
+        } else if (err.code === "auth/user-not-found") {
+          this.error = "No account found with that email."
+        } else {
+          this.error = err.message
+        }
+      } finally { this.loading = false }
+    },
+
+    openForgot() {
+      this.resetEmail = this.email; this.resetError = ""; this.resetSuccess = false; this.showForgot = true
+    },
+
+    closeForgot() {
+      this.showForgot = false; this.resetEmail = ""; this.resetError = ""; this.resetSuccess = false
+    },
+
+    async sendReset() {
+      this.resetError = ""; this.resetSuccess = false
+      if (!this.resetEmail.trim()) { this.resetError = "Please enter your email."; return }
+      this.sendingReset = true
+      try {
+        await sendPasswordResetEmail(getAuth(), this.resetEmail.trim())
+        this.resetSuccess = true
+      } catch (err) {
+        this.resetError = err.code === "auth/user-not-found" ? "No account found." : err.message
+      } finally { this.sendingReset = false }
     }
-  }
-}
-,
-  useAdminLogin() {
-    this.email = "Veerpal123@gmail.ac.uk"
-    this.$nextTick(() => {
-      this.$refs.passwordInput?.focus()
-    })
-  },
-  async resetPassword() {
-    this.error = ""
-    if (!this.email) {
-      this.error = "Enter your email to reset your password."
-      return
-    }
-    try {
-      await sendPasswordResetEmail(getAuth(), this.email)
-      this.error = "Password reset email sent. Check your inbox."
-    } catch (err) {
-      this.error = err.message
-    }
-  }
   }
 }
 </script>
-<!-- With the async login part of code this authenticats the user and gives them a redirectory to the dashboard-->
- <!--For the async password this gives a password reset while using the firebase authentication-->

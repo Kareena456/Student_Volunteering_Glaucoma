@@ -1,194 +1,184 @@
-<!--This is the volunteering hubs and the students look and enroll in the task-->
+<!-- Volunteering hubs 75% quiz pass mark required to unlock all tasks -->
 <template>
-  <div class="mx-auto max-w-5xl px-4 py-6">
-    <h1 class="mb-4 text-2xl font-semibold md:text-3xl">Volunteering hubs</h1>
-    <p class="mb-3 text-sm text-slate-400">
-      Choose a task to enroll and start volunteering.
-    </p>
-    <p class="mb-4 text-sm text-slate-300">
-      There are multiple students that can do one task since there are several patients.
-    </p>
-<!--This is the loader whilst fectching the tasks and assignments -->
-    <div
-      v-if="loading"
-      class="rounded-xl border border-slate-800 bg-slate-900/60 p-4"
-    >
-      Loading…
+  <div class="mx-auto max-w-5xl px-4 py-6 pt-20">
+
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 md:text-3xl">Volunteering Hubs</h1>
+      <p class="mt-1 text-sm text-gray-500">Select a task to enrol and start volunteering with glaucoma patients.</p>
     </div>
-<!--This shows all of the tasks which are available and the current status of enrollment-->
-    <div v-else class="space-y-3">
-      <button
-        v-if="hasInProgress"
-        class="mb-4 inline-flex items-center justify-center rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-indigo-400"
-        @click="$router.push('/dashboard')"
-      >
-        Submit evidence on dashboard
-      </button>
 
-      <div
-        v-for="task in tasks"
-        :key="task.id"
-        class="rounded-xl border border-slate-800 bg-slate-900/60 p-4"
-      >
-        <h3 class="text-lg font-semibold">{{ task.title }}</h3>
+    <!-- Quiz banners -->
+    <div v-if="!loading && quizScore === null" class="mb-5 rounded-2xl border border-yellow-200 bg-yellow-50 px-5 py-4">
+      <p class="text-sm font-semibold text-yellow-800">You need to complete the quiz before enrolling in any tasks.</p>
+      <button class="mt-2 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700" @click="$router.push('/quiz')">Take quiz</button>
+    </div>
 
-        <p class="mt-1 text-sm text-slate-400">
-          Hub: {{ task.hub }} · Difficulty: {{ task.difficulty }}
-        </p>
+    <div v-else-if="!loading && quizScore !== null && !hasPassed" class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
+      <p class="text-sm font-semibold text-red-700">Your quiz score: {{ quizScore }}% — you need 75% to unlock tasks.</p>
+      <p class="mt-0.5 text-sm text-red-500">Don't worry, you can retake the quiz as many times as you need!</p>
+      <button class="mt-2 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700" @click="$router.push('/quiz')">Retake quiz</button>
+    </div>
 
-        <p class="mt-2 text-sm">Points: {{ task.points }}</p>
-        <div class="mt-2 inline-flex items-center gap-2 text-xs">
-          <span class="text-slate-400">Status:</span>
-          <span
-            class="rounded-full border px-2 py-0.5 font-semibold"
-            :class="statusClass(getAssignment(task.id)?.status || 'Available')"
-            :title="statusHelp(getAssignment(task.id)?.status || 'Available')"
-          >
-            {{ getAssignment(task.id)?.status || "Available" }}
-          </span>
-        </div>
+    <div v-else-if="!loading && hasPassed" class="mb-5 rounded-2xl border border-green-200 bg-green-50 px-5 py-4">
+      <p class="text-sm font-semibold text-green-700">Quiz passed with <span class="text-green-800">{{ quizScore }}%</span> — all tasks are unlocked!</p>
+    </div>
 
-       <!--This menables the student to be able to enroll in a task if it has not been assigned already-->
-        <button
-          v-if="!getAssignment(task.id)"
-          class="mt-3 inline-flex items-center justify-center rounded-lg border border-indigo-600 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
-          @click="enroll(task.id)"
-        >
-          Enroll
+    <div v-if="loading" class="rounded-2xl border border-gray-200 bg-white p-6 text-gray-400 shadow-sm">Loading hubs…</div>
+
+    <div v-else class="space-y-4">
+      <div v-for="hub in hubs" :key="hub.id" class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+
+        <!-- Hub header -->
+        <button class="flex w-full items-start justify-between gap-4 p-5 text-left transition hover:bg-gray-50" @click="toggleHub(hub.id)">
+          <div class="flex items-start gap-4">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-2xl border border-blue-100">
+              {{ hub.icon }}
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-gray-900">{{ hub.name }}</h2>
+              <p class="mt-0.5 text-xs text-gray-400">{{ hub.address }}</p>
+              <p class="mt-1 text-sm text-gray-500">{{ hub.tagline }}</p>
+            </div>
+          </div>
+          <span class="shrink-0 mt-1 text-xs text-gray-400">{{ openHubs.has(hub.id) ? '▲ Hide' : '▼ Details' }}</span>
         </button>
 
-        <div
-          v-else-if="getAssignment(task.id)?.status === 'In Progress'"
-          class="mt-3 text-sm text-slate-400"
-        >
-          In progress — submit evidence from your dashboard.
-        </div>
+        <!-- Expanded content -->
+        <div v-if="openHubs.has(hub.id)" class="border-t border-gray-100">
+          <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="space-y-4 p-5">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">About</p>
+                <p class="mt-1 text-sm leading-relaxed text-gray-600">{{ hub.description }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Contact</p>
+                <p class="mt-1 text-sm text-gray-600">{{ hub.phone }}</p>
+                <p class="text-sm text-gray-600">{{ hub.email }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Opening hours</p>
+                <p class="mt-1 text-sm text-gray-600">{{ hub.hours }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Getting there</p>
+                <p class="mt-1 text-sm text-gray-600">{{ hub.transport }}</p>
+              </div>
+            </div>
+            <div class="h-64 w-full overflow-hidden border-t border-gray-100 md:border-l md:border-t-0">
+              <iframe :src="hub.mapSrc" class="h-full w-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" :title="'Map of ' + hub.name"></iframe>
+            </div>
+          </div>
 
-        <div
-          v-else-if="getAssignment(task.id)?.status === 'Awaiting Approval'"
-          class="mt-3 text-sm text-slate-400"
-        >
-          Submitted for approval.
-        </div>
+          <!-- Tasks -->
+          <div class="border-t border-gray-100 p-5">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Tasks at this hub</p>
+            <div class="space-y-3">
+              <div v-for="task in tasksForHub(hub.name)" :key="task.id" class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p class="font-semibold text-gray-900">{{ task.title }}</p>
+                    <p class="mt-0.5 text-xs text-gray-400">{{ task.hours }}h · {{ task.points }} pts</p>
+                    <p v-if="task.description" class="mt-1 text-sm text-gray-500">{{ task.description }}</p>
+                  </div>
+                  <span class="rounded-full border px-2.5 py-0.5 text-xs font-semibold" :class="statusClass(getAssignment(task.id)?.status || 'Available')">
+                    {{ getAssignment(task.id)?.status || 'Available' }}
+                  </span>
+                </div>
 
-        <div
-          v-else-if="getAssignment(task.id)?.status === 'Approved'"
-          class="mt-3 text-sm text-emerald-300"
-        >
-          Approved.
-        </div>
+                <div class="mt-3">
+                  <div v-if="!hasPassed" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-500">
+                    Locked — complete the quiz with 75%+ to unlock
+                    <button class="text-blue-600 underline hover:text-blue-800" @click="$router.push('/quiz')">
+                      {{ quizScore !== null ? 'retake quiz' : 'take quiz' }}
+                    </button>
+                  </div>
 
+                  <button
+                    v-else-if="!getAssignment(task.id)"
+                    class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                    :disabled="enrolling[task.id]" @click="enroll(task.id)"
+                  >
+                    {{ enrolling[task.id] ? 'Enrolling…' : 'Enrol' }}
+                  </button>
+
+                  <p v-else-if="getAssignment(task.id)?.status === 'In Progress'" class="text-sm text-yellow-600">
+                    In progress — <button class="underline" @click="$router.push('/dashboard')">submit evidence on dashboard</button>
+                  </p>
+                  <p v-else-if="getAssignment(task.id)?.status === 'Awaiting Approval'" class="text-sm text-orange-500">Submitted — awaiting approval.</p>
+                  <p v-else-if="getAssignment(task.id)?.status === 'Approved'" class="text-sm font-semibold text-green-600">Approved</p>
+                </div>
+              </div>
+
+              <div v-if="tasksForHub(hub.name).length === 0" class="text-sm text-gray-400">No tasks currently listed for this hub.</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div
-      v-if="error"
-      class="mt-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200"
-    >
-      {{ error }}
-    </div>
-
+    <div v-if="error" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { db } from "../firebase"
-import {
-  collection,
-  getDocs,
-  doc,
-  runTransaction,
-  query,
-  where
-} from "firebase/firestore"
-// These are all of the state variables for the errors, loading, and the user assignments 
-const loading = ref(true)
-const error = ref("")
-const tasks = ref([])
-const assignments = ref([])
-const hasInProgress = computed(() =>
-  assignments.value.some(a => a.status === "In Progress")
-)
+import { collection, getDocs, doc, getDoc, runTransaction, query, where } from "firebase/firestore"
 
+const PASS_MARK = 75
+const loading = ref(true), error = ref(""), tasks = ref([]), assignments = ref([])
+const quizScore = ref(null), openHubs = ref(new Set()), enrolling = ref({})
 const auth = getAuth()
-// When the page has loaded this line of code fetches the tasks and the user assignments 
+
+const hubs = [
+  { id: "moorfields", name: "Moorfields Eye Hospital", icon: "🏥", address: "162 City Road, London EC1V 2PD", tagline: "The world's oldest and largest eye hospital — supporting patients with glaucoma care.", description: "Moorfields Eye Hospital NHS Foundation Trust is a world-leading centre for the treatment and research of eye disease. Volunteers here assist glaucoma patients with pre-appointment guidance, waiting room support, and educational leaflet distribution.", phone: "020 7253 3411", email: "volunteering@moorfields.nhs.uk", hours: "Mon–Fri 08:00–18:00  ·  Sat 09:00–13:00", transport: "Old Street (Northern line) — 5 min walk  ·  Angel (Northern line) — 10 min walk", mapSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2482.065!2d-0.09240!3d51.52680!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761ca5b12e4a01%3A0xe7ac44f1a491f1e4!2sMoorfields%20Eye%20Hospital!5e0!3m2!1sen!2suk!4v1700000000000!5m2!1sen!2suk" },
+  { id: "sunrise", name: "Sunrise Care Home", icon: "🏡", address: "45 Maple Avenue, Islington, London N1 2RH", tagline: "A warm residential care home supporting elderly residents, many living with glaucoma.", description: "Sunrise Care Home provides 24-hour residential and nursing care for 60 elderly residents. Volunteers assist with companionship visits, reading assistance, guided walks, and helping residents manage their eye drop schedules alongside nursing staff.", phone: "020 7359 1122", email: "volunteers@sunrisecarehome.co.uk", hours: "Mon–Sun 09:00–20:00  (volunteer shifts arranged in advance)", transport: "Highbury & Islington (Victoria/Overground) — 8 min walk  ·  Bus 271, 263", mapSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2481.500!2d-0.10390!3d51.53900!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761b3c5d6e7f80%3A0x112233445566778!2sIslington%2C%20London%20N1!5e0!3m2!1sen!2suk!4v1700000000001!5m2!1sen!2suk" },
+  { id: "hackney", name: "Hackney Community Vision Centre", icon: "🏘️", address: "78 Dalston Lane, Hackney, London E8 3AH", tagline: "A community hub empowering visually impaired residents through education and peer support.", description: "The Hackney Community Vision Centre works with over 300 local residents affected by sight loss. Volunteers take on mentoring roles, run awareness stalls, and help coordinate community outreach events in partnership with local GPs.", phone: "020 8985 4477", email: "info@hackneyvisioncentre.org.uk", hours: "Tue, Wed, Thu 10:00–16:00  ·  Sat 10:00–14:00", transport: "Dalston Junction (London Overground) — 3 min walk  ·  Bus 30, 56, 277", mapSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2481.200!2d-0.07450!3d51.54650!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761c7a9b8d0e1f%3A0xaabbccdd11223344!2sDalston%20Lane%2C%20Hackney!5e0!3m2!1sen!2suk!4v1700000000002!5m2!1sen!2suk" }
+]
+
+const hasPassed = computed(() => quizScore.value !== null && quizScore.value >= PASS_MARK)
+const tasksForHub = (hubName) => tasks.value.filter(t => t.hub === hubName)
+const getAssignment = (taskId) => assignments.value.find(a => a.taskId === taskId)
+const toggleHub = (id) => { const next = new Set(openHubs.value); next.has(id) ? next.delete(id) : next.add(id); openHubs.value = next }
+const statusClass = (status) => {
+  if (status === "In Progress")       return "border-yellow-200 bg-yellow-50 text-yellow-700"
+  if (status === "Awaiting Approval") return "border-orange-200 bg-orange-50 text-orange-600"
+  if (status === "Approved")          return "border-green-200 bg-green-50 text-green-700"
+  return "border-gray-200 bg-gray-100 text-gray-600"
+}
+
 onMounted(() => {
   onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      error.value = "Not logged in"
-      loading.value = false
-      return
-    }
-
+    if (!user) { error.value = "Not logged in."; loading.value = false; return }
     try {
-      const allSnap = await getDocs(collection(db, "tasks"))
-      const all = allSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-
-      tasks.value = all
-
-      const assignmentSnap = await getDocs(
-        query(collection(db, "assignments"), where("userId", "==", user.uid))
-      )
+      const userSnap = await getDoc(doc(db, "users", user.uid))
+      quizScore.value = (userSnap.data() || {}).quizScore ?? null
+      const [allSnap, assignmentSnap] = await Promise.all([getDocs(collection(db, "tasks")), getDocs(query(collection(db, "assignments"), where("userId", "==", user.uid)))])
+      tasks.value = allSnap.docs.map(d => ({ id: d.id, ...d.data() }))
       assignments.value = assignmentSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-    } catch (e) {
-      error.value = e.message
-    } finally {
-      loading.value = false
-    }
+    } catch (e) { error.value = e.message }
+    finally { loading.value = false }
   })
 })
-// This line of code enrolls the student that has logged in into a task that has been selected 
+// Enrolls the student in a task by creating an assignment document in Firestore
+// The assignment ID is a combination of the student's UID and the task ID
+// This means the same student can never enrol in the same task twice  it would create a duplicate ID
+// A Firestore transaction is used to safely check and create the document at the same time
+// Once saved to Firestore the local assignments list is also updated so the UI changes instantly without reloading
 const enroll = async (taskId) => {
-  const user = auth.currentUser
-  if (!user) return
-
-  const assignmentId = `${user.uid}_${taskId}`
-  const assignmentRef = doc(db, "assignments", assignmentId)
-
+const enroll = async (taskId) => {
+  const user = auth.currentUser; if (!user || !hasPassed.value) return
+  enrolling.value = { ...enrolling.value, [taskId]: true }; error.value = ""
+  const assignmentId = `${user.uid}_${taskId}`, assignmentRef = doc(db, "assignments", assignmentId)
   try {
     await runTransaction(db, async (tx) => {
-      const existing = await tx.get(assignmentRef)
-      if (existing.exists()) {
-        throw new Error("You are already enrolled in this task.")
-      }
-
-      tx.set(assignmentRef, {
-        taskId,
-        userId: user.uid,
-        status: "In Progress",
-        createdAt: new Date()
-      })
+      const existing = await tx.get(assignmentRef); if (existing.exists()) throw new Error("Already enrolled.")
+      tx.set(assignmentRef, { taskId, userId: user.uid, status: "In Progress", createdAt: new Date() })
     })
-
-    assignments.value.push({
-      id: assignmentId,
-      taskId,
-      userId: user.uid,
-      status: "In Progress"
-    })
-  } catch (e) {
-    error.value = e.message || "Unable to enroll in task."
-  }
+    assignments.value = [...assignments.value, { id: assignmentId, taskId, userId: user.uid, status: "In Progress" }]
+  } catch (e) { error.value = e.message || "Unable to enrol." }
+  finally { enrolling.value = { ...enrolling.value, [taskId]: false } }
 }
-// This returns the assignment for a certian task if the user is actually enrolled 
-const getAssignment = (taskId) =>
-  assignments.value.find(a => a.taskId === taskId)
-
-const statusClass = (status) => {
-  if (status === "In Progress") return "border-amber-500/40 bg-amber-500/10 text-amber-200"
-  if (status === "Awaiting Approval") return "border-orange-500/40 bg-orange-500/10 text-orange-200"
-  if (status === "Approved") return "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-  return "border-slate-600/60 bg-slate-800/60 text-slate-200"
-}
-
-const statusHelp = (status) => {
-  if (status === "In Progress") return "You are working on this task."
-  if (status === "Awaiting Approval") return "Submitted; waiting for admin approval."
-  if (status === "Approved") return "Approved by admin."
-  return "Available to enroll."
-}
-
-
 </script>

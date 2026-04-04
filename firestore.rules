@@ -4,64 +4,42 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-
-    function isAdmin() {
+    function isOrganisation() {
       return isSignedIn() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "organisation";
     }
-
     match /users/{userId} {
-      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn();
       allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow delete: if isAdmin();
+      allow update: if isSignedIn() && (request.auth.uid == userId || isOrganisation());
+      allow delete: if isOrganisation();
     }
-
     match /tasks/{taskId} {
       allow read: if isSignedIn();
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow create: if isOrganisation();
+      allow update: if isOrganisation();
+      allow delete: if isOrganisation();
     }
-
     match /assignments/{assignmentId} {
-      allow read: if isSignedIn() &&
-        (resource == null || resource.data.userId == request.auth.uid || isAdmin());
-
-      // Student creates their own assignment.
+      allow read: if isSignedIn();
       allow create: if isSignedIn() &&
         request.resource.data.userId == request.auth.uid &&
-        request.resource.data.status == "In Progress";
-
-      // Student submits evidence.
+        request.resource.data.status == "In Progress" &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.quizScore >= 75;
       allow update: if isSignedIn() && (
         (
-          request.resource.data.diff(resource.data).changedKeys()
-            .hasOnly(["status", "evidenceText", "evidenceSubmittedAt"]) &&
           resource.data.userId == request.auth.uid &&
           resource.data.status == "In Progress" &&
-          request.resource.data.status == "Awaiting Approval" &&
-          request.resource.data.evidenceText is string &&
-          request.resource.data.evidenceText.size() > 0
+          request.resource.data.status == "Awaiting Approval"
         )
         ||
-        // Admin approves assignment.
-        (
-          isAdmin() &&
-          request.resource.data.diff(resource.data).changedKeys()
-            .hasOnly(["status"]) &&
-          resource.data.status == "Awaiting Approval" &&
-          request.resource.data.status == "Approved"
-        )
+        isOrganisation()
       );
-
-      allow delete: if isAdmin();
+      allow delete: if isOrganisation();
     }
-
     match /hubs/{hubId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow write: if isOrganisation();
     }
   }
 }
-// Here all of the firestore security rules published on firebase and it has control of who can write and read data 
