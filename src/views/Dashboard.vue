@@ -2,7 +2,7 @@
 Copy
 
 <!--
-  Dashboard.vue — The main student dashboard.
+  Dashboard.vue — The main student dashboard where everything is displayed
   Shows the student's profile, quiz score, stats (points, hours, tasks),
   overall progress bar, enrolled tasks with evidence submission,
   recent activity feed, and certificate download when all tasks are approved.
