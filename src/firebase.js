@@ -14,7 +14,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 
-export const auth = getAuth(app)
+export const auth =getAuth(app)
 export const db = getFirestore(app)
-export const storage = getStorage(app)
-// This is all of the firebase configuratin and the service initialisation 
+export const storage= getStorage(app)
+// Firebase configuration and service initialisation this connects the app to the Firebase project

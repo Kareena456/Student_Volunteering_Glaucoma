@@ -1,9 +1,9 @@
 /*
-  router/index.js this defines all the URL routes for the application.
-  Each route maps a URL path to a Vue component (page).
-  Vue Router handles navigation between pages without reloading the browser.
+  router/index.js defines all the URL routes 
+  Each route maps a URL path to a Vue component and 
+  Vue Router handles navigation between pages without reloading the browser and a 
   A route guard is added to prevent unauthenticated users from accessing
-  protected pages directly by typing the URL.
+  protected pages directly by typing the URL
 */
 
 import { createRouter, createWebHistory } from "vue-router"
@@ -18,12 +18,12 @@ import Organisation from "../views/Organisation.vue"
 
 const routes = [
   { path: "/",             component: Home,         meta: { public: true }  }, // Public landing page
-  { path: "/login",        component: Login,        meta: { public: true }  }, // Public login page
-  { path: "/register",     component: Register,     meta: { public: true }  }, // Public register page
+  { path: "/login",        component: Login,        meta: { public: true }  }, 
+  { path: "/register",     component: Register,     meta: { public: true }  }, 
   { path: "/dashboard",    component: Dashboard    }, // Protected — students only
-  { path: "/hubs",         component: Hubs         }, // Protected — students only
-  { path: "/quiz",         component: Quiz         }, // Protected — students only
-  { path: "/organisation", component: Organisation } // Protected — organisations only
+  { path: "/hubs",         component: Hubs         },
+  { path: "/quiz",         component: Quiz         }, 
+  { path: "/organisation", component: Organisation } 
 ]
 
 const router = createRouter({
@@ -32,7 +32,7 @@ const router = createRouter({
 })
 
 /*
-  Route guard this runs before every page navigation.
+  Route guard this runs before every page navigation and 
   If the user is not logged in and tries to access a protected page,
   they are redirected to the login page automatically.
   This prevents anyone from manually typing a URL to bypass the login.

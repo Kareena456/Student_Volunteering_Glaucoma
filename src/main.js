@@ -1,4 +1,4 @@
-import "./firebase"
+import "./firebase" // connect to firebase 
 import "./style.css"
 import { createApp } from "vue"
 import App from "./App.vue"

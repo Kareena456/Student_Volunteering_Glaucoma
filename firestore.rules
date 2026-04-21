@@ -4,7 +4,7 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    function isOrganisation() {
+    function isOrganisation() { 
       return isSignedIn() &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "organisation";
     }

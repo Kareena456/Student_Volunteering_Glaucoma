@@ -1,4 +1,4 @@
-<!-- Public landing page visible to everyone without logging in -->
+<!-- This is the homepage visible to everyone without logging in -->
 <template>
   <div>
     <!-- Scrolling ticker banner fixed just below the navbar -->
@@ -11,7 +11,7 @@
           <span class="inline-block h-4 w-1.5 rounded-sm bg-teal-300"></span>
           <span class="px-6">New tasks available at Moorfields Eye Hospital, Sunrise Care Home and Hackney Community Vision Centre</span>
           <span class="inline-block h-4 w-1.5 rounded-sm bg-teal-300"></span>
-          <!-- Duplicated for seamless loop -->
+          <!-- Duplicated so the ticker loops continously without a gap  -->
           <span class="px-6">Welcome to Glaucoma Care — currently accepting new student volunteers across selected partner hubs in London!</span>
           <span class="inline-block h-4 w-1.5 rounded-sm bg-teal-300"></span>
           <span class="px-6">Score 75% on the quiz to unlock volunteering tasks at our hubs</span>
@@ -22,10 +22,10 @@
       </div>
     </div>
 
-    <!-- Page content pt-28 accounts for navbar + ticker height -->
+    
     <div class="mx-auto max-w-5xl px-4 pb-6 pt-28">
 
-      <!-- Main banner at the top of the page, it shows the platform title and login register buttons -->
+      <!-- Top banner showing the platform title and login/register buttons -->
       <section class="mb-6 rounded-2xl bg-blue-600 px-6 py-10 text-white shadow-lg">
         <h1 class="text-3xl font-bold md:text-4xl">Student Volunteering &amp; Glaucoma Awareness</h1>
         <p class="mt-3 max-w-2xl text-blue-100">
@@ -39,47 +39,41 @@
 
       <div class="space-y-5">
 
-        <!-- How it works each step card is clickable and navigates to the relevant page -->
+        <!-- How it works and  each step card is clickable and links to the relevant page -->
         <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
           <h2 class="text-xl font-bold text-gray-900">How this platform works</h2>
           <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
 
-            <!-- Step 1 links to register page -->
             <router-link to="/register" class="rounded-xl border border-blue-100 bg-blue-50 p-4 transition hover:border-blue-300 hover:bg-blue-100">
               <p class="text-2xl">📝</p>
               <p class="mt-2 font-semibold text-blue-900">1. Register</p>
               <p class="mt-1 text-sm text-blue-700">Create your student account and log in.</p>
             </router-link>
 
-            <!-- Step 2 links to quiz page -->
             <router-link to="/quiz" class="rounded-xl border border-blue-100 bg-blue-50 p-4 transition hover:border-blue-300 hover:bg-blue-100">
               <p class="text-2xl">🧠</p>
               <p class="mt-2 font-semibold text-blue-900">2. Take the quiz</p>
               <p class="mt-1 text-sm text-blue-700">Score 75% or above to unlock volunteering tasks and ensure you understand how to support glaucoma patients safely. You can retake as many times as needed.</p>
             </router-link>
 
-            <!-- Step 3 links to hubs page -->
             <router-link to="/hubs" class="rounded-xl border border-blue-100 bg-blue-50 p-4 transition hover:border-blue-300 hover:bg-blue-100">
               <p class="text-2xl">🏥</p>
               <p class="mt-2 font-semibold text-blue-900">3. Choose a hub</p>
               <p class="mt-1 text-sm text-blue-700">Browse hubs and enrol in available tasks.</p>
             </router-link>
 
-            <!-- Step 4 links to dashboard -->
             <router-link to="/dashboard" class="rounded-xl border border-blue-100 bg-blue-50 p-4 transition hover:border-blue-300 hover:bg-blue-100">
               <p class="text-2xl">📋</p>
               <p class="mt-2 font-semibold text-blue-900">4. Submit evidence</p>
               <p class="mt-1 text-sm text-blue-700">Complete your task and submit evidence for approval.</p>
             </router-link>
 
-            <!-- Step 5 links to dashboard -->
             <router-link to="/dashboard" class="rounded-xl border border-blue-100 bg-blue-50 p-4 transition hover:border-blue-300 hover:bg-blue-100">
               <p class="text-2xl">⭐</p>
               <p class="mt-2 font-semibold text-blue-900">5. Earn points</p>
               <p class="mt-1 text-sm text-blue-700">Track your hours and points on your dashboard.</p>
             </router-link>
 
-            <!-- Step 6 links to dashboard -->
             <router-link to="/dashboard" class="rounded-xl border border-blue-100 bg-blue-50 p-4 transition hover:border-blue-300 hover:bg-blue-100">
               <p class="text-2xl">🎓</p>
               <p class="mt-2 font-semibold text-blue-900">6. Get certified</p>
@@ -92,10 +86,11 @@
             <span class="font-semibold">Quiz pass mark: 75%</span> — watch the training videos below and read the resources to prepare. You can retake as many times as you need!
           </div>
           <p class="mt-3 text-xs text-gray-400">We can only accept applications from those over 18 years old.</p>
+          <!-- Organisation accounts are manually verified for safeguarding purposes -->
           <p class="mt-1 text-xs text-gray-400">Organisation accounts are manually verified by the platform administrator to ensure legitimacy and safeguarding.</p>
         </section>
 
-        <!-- What is glaucoma -->
+        <!-- What is glaucoma section with educational content -->
         <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
           <h2 class="text-xl font-bold text-gray-900">What is glaucoma?</h2>
           <p class="mt-3 text-gray-600">
@@ -110,7 +105,7 @@
           <img src="https://doctorkerr.com.au/wp-content/uploads/2021/06/diagram-normal-glaucoma-eye.png" alt="Normal eye vs glaucoma diagram" class="mt-5 w-full rounded-xl border border-blue-100 bg-white object-contain md:h-56" />
         </section>
 
-        <!-- Why volunteer -->
+        <!-- Why volunteering matters section -->
         <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
           <h2 class="text-xl font-bold text-gray-900">Why student volunteering matters</h2>
           <p class="mt-2 text-gray-600">Student volunteering strengthens communities, improves mental health, and bridges education with careers.</p>
@@ -123,7 +118,7 @@
           </div>
         </section>
 
-        <!-- Resources -->
+        <!-- External resources and links for further reading -->
         <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
           <h2 class="text-xl font-bold text-gray-900">Resources and further reading</h2>
           <div class="mt-3 flex flex-col gap-2 text-sm">
@@ -135,7 +130,7 @@
           </div>
         </section>
 
-        <!-- Training videos this is for students and they should watch before taking the quiz -->
+        <!-- Training videos students should watch these before taking the quiz -->
         <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
           <h2 class="text-xl font-bold text-gray-900">Training videos</h2>
           <p class="mt-2 text-sm text-gray-500">Watch these before taking the quiz to build your knowledge.</p>
@@ -155,7 +150,7 @@
           </div>
         </section>
 
-        <!-- Bottom login/register buttons -->
+        <!-- Bottom login and register buttons -->
         <section class="flex flex-wrap gap-3 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
           <router-link to="/login" class="rounded-lg border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">Login</router-link>
           <router-link to="/register" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">Register</router-link>
@@ -171,9 +166,7 @@
 </script>
 
 <style scoped>
-/* Ticker animation this moves the text continuously from right to left across the screen
-   The content is duplicated in the HTML so when the first copy finishes scrolling
-   the second copy seamlessly takes over with no gap or jump */
+
 .ticker-track {
   display: inline-block;
   animation: ticker 35s linear infinite;

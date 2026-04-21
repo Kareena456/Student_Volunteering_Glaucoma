@@ -1,22 +1,17 @@
 <!--
-  Organisation.vue — The organisation dashboard.
-  This page is shown to hub organisations (e.g. Moorfields Eye Hospital)
-  after they log in. It allows them to:
-  - View stats about their hub (tasks, pending, approved, hours given)
-  - Add new volunteering activities which instantly appear on the Hubs page
-  - Delete activities they no longer need
-  - Review and approve or reject student evidence submissions
-  The dashboard automatically loads data for whichever hub is logged in
-  based on the "hub" field in their Firestore user document.
+  Organisation.vue is the the organisation dashboard
+  Shown to hub organisations after they log in
+  Allows them to add and delete tasks, review student submissions and approve or reject evidence
+  The dashboard only shows data for the hub that is currently logged in
 -->
 <template>
   <div class="mx-auto max-w-5xl px-4 py-6 pt-20">
 
-    <div v-if="loading" class="rounded-2xl border border-gray-200 bg-white p-6 text-gray-400 shadow-sm">Loading…</div>
+    <div v-if="loading" class="rounded-2xl border border-gray-200 bg-white p-6 text-gray-400 shadow-sm">Loading...</div>
 
     <div v-else class="space-y-5">
 
-      <!-- Hub header shows the organisation name prominently -->
+      <!-- Hub header showing the organisation name -->
       <section class="rounded-2xl border border-blue-100 bg-blue-600 p-6 text-white shadow-sm">
         <div class="flex items-center gap-4">
           <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl">🏥</div>
@@ -27,7 +22,7 @@
         </div>
       </section>
 
-      <!-- Stats overview  tasks listed, pending approvals, approved count, hours given -->
+      <!-- Stats cards showing tasks listed, pending approvals, approved count and hours given -->
       <section class="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Our tasks</p>
@@ -51,7 +46,7 @@
         </div>
       </section>
 
-      <!-- Add new activity form — saves directly to Firestore and appears on Hubs page instantly -->
+      <!-- Add new tvolunteering tasks and this saves to Firestore and appears on the Hubs page instantly -->
       <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="mb-4 text-lg font-bold text-gray-900">Add new activity</h2>
         <div class="space-y-4">
@@ -78,7 +73,7 @@
             </div>
           </div>
 
-          <!-- Difficulty selector — styled buttons instead of a plain dropdown -->
+          <!-- Difficulty selector using styled buttons instead of a dropdown -->
           <div>
             <label class="block text-sm font-semibold text-gray-700">Difficulty</label>
             <div class="mt-1 flex gap-2">
@@ -91,7 +86,7 @@
           </div>
 
           <button class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="addingTask" @click="addTask">
-            {{ addingTask ? 'Adding…' : '+ Add activity' }}
+            {{ addingTask ? 'Adding...' : '+ Add activity' }}
           </button>
           <div v-if="addTaskError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{{ addTaskError }}</div>
           <div v-if="addTaskSuccess" class="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
@@ -100,7 +95,7 @@
         </div>
       </section>
 
-      <!-- List of this organisation's existing activities -->
+      <!-- List of this organisation's existing activities with delete option -->
       <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="mb-4 text-lg font-bold text-gray-900">Our activities</h2>
         <div v-if="myTasks.length === 0" class="text-sm text-gray-400">No activities added yet.</div>
@@ -114,17 +109,17 @@
               </p>
               <p v-if="task.description" class="mt-0.5 text-xs text-gray-400">{{ task.description }}</p>
             </div>
-            <!-- Delete button — removes the task from Firestore -->
+            <!-- Delete button removes the task from Firestore -->
             <button class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-500 transition hover:bg-red-100" @click="deleteTask(task.id)">Delete</button>
           </div>
         </div>
       </section>
 
-      <!-- Pending submissions — students who have submitted evidence for this hub's tasks -->
+      <!-- Pending submissions from students waiting to be reviewed -->
       <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="mb-4 text-lg font-bold text-gray-900">
           Pending submissions
-          <!-- Badge showing the number of submissions waiting to be reviewed -->
+          <!-- Badge showing how many submissions are waiting -->
           <span v-if="pendingSubmissions.length > 0" class="ml-2 rounded-full bg-blue-600 px-2 py-0.5 text-xs text-white">{{ pendingSubmissions.length }}</span>
         </h2>
         <div v-if="pendingSubmissions.length === 0" class="text-sm text-gray-400">No pending submissions — all caught up!</div>
@@ -138,13 +133,13 @@
               <span class="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-xs font-semibold text-orange-600">Awaiting Approval</span>
             </div>
 
-            <!-- Student name resolved from their Firestore document -->
+            <!-- Student name loaded from their Firestore document -->
             <div class="mt-3 rounded-lg border border-gray-200 bg-white px-3 py-2">
               <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Student</p>
               <p class="mt-0.5 text-sm font-semibold text-gray-900">{{ r.studentName || 'Unknown student' }}</p>
             </div>
 
-            <!-- The evidence the student submitted -->
+            <!-- Evidence the student submitted -->
             <div v-if="r.evidenceText" class="mt-3">
               <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Evidence submitted</p>
               <p class="mt-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700">{{ r.evidenceText }}</p>
@@ -156,15 +151,25 @@
               <p class="mt-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm italic text-gray-500">"{{ r.feedbackText }}"</p>
             </div>
 
-            <!-- Approve or Reject buttons -->
+            <!-- Optional rejection reason the organisation can fill in before rejecting -->
+            <div class="mt-3">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Rejection reason (optional)</label>
+              <input
+                v-model="r.rejectionReason"
+                type="text"
+                placeholder="e.g. Please include the date and location of your activity"
+                class="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
+
             <div class="mt-4 flex gap-2">
-              <!-- Approve — marks the task as Approved and adds hours/points to the student -->
+              <!-- Approve marks the task as Approved and adds hours and points to the student -->
               <button class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60" :disabled="r.approving || r.rejecting" @click="approve(r)">
-                {{ r.approving ? 'Approving…' : 'Approve' }}
+                {{ r.approving ? 'Approving...' : 'Approve' }}
               </button>
-              <!-- Reject — sends the task back to In Progress so the student can resubmit -->
+              <!-- Reject sends the task back to In Progress so the student can resubmit -->
               <button class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-60" :disabled="r.approving || r.rejecting" @click="reject(r)">
-                {{ r.rejecting ? 'Rejecting…' : 'Reject' }}
+                {{ r.rejecting ? 'Rejecting...' : 'Reject' }}
               </button>
             </div>
           </div>
@@ -191,10 +196,10 @@ const myTasks = ref([]), pendingSubmissions = ref([])
 const addingTask = ref(false), addTaskError = ref(""), addTaskSuccess = ref(false)
 const approvedCount = ref(0), totalHoursGiven = ref(0)
 
-// New task form fields
+
 const newTask = ref({ title: "", description: "", hours: "", points: "", difficulty: "Easy" })
 
-// Returns colour classes for difficulty badges in the task list
+
 const difficultyClass = (d) => {
   const l = (d || "").toLowerCase()
   if (l === "easy")   return "border-green-200 bg-green-50 text-green-700"
@@ -203,31 +208,31 @@ const difficultyClass = (d) => {
   return "border-gray-200 bg-gray-100 text-gray-600"
 }
 
-// Returns colour classes for the selected difficulty button in the add task form
+
 const difficultyActiveClass = (level) => {
   if (level === "Easy")   return "border-green-400 bg-green-100 text-green-800"
   if (level === "Medium") return "border-yellow-400 bg-yellow-100 text-yellow-800"
   return "border-red-400 bg-red-100 text-red-700"
 }
 
+// Save Firestore listeners so they can be stopped when the page closes
 let unsubscribeTasks = null, unsubscribePending = null
 
-// Set up real-time listeners for this organisation's tasks and pending submissions
 const setupListeners = (hub) => {
-  // Watch tasks that belong to this hub
+  // Real time listener for tasks belonging to this hub
   unsubscribeTasks = onSnapshot(
     query(collection(db, "tasks"), where("hub", "==", hub)),
     (snap) => { myTasks.value = snap.docs.map(d => ({ id: d.id, ...d.data() })) }
   )
 
-  // Watch all assignments awaiting approval and filter to this hub's tasks
+  // Real time listener for submissions awaiting approval filtered to this hub's tasks
   unsubscribePending = onSnapshot(
     query(collection(db, "assignments"), where("status", "==", "Awaiting Approval")),
     async (snap) => {
       const taskIds    = myTasks.value.map(t => t.id)
       const hubPending = snap.docs.map(d => ({ assignmentId: d.id, ...d.data() })).filter(a => taskIds.includes(a.taskId))
 
-      // Resolve each student's name from their Firestore document
+      // Load each student's name from their Firestore document
       const userMap = new Map()
       await Promise.all(hubPending.map(async (a) => {
         if (!userMap.has(a.userId)) {
@@ -241,7 +246,7 @@ const setupListeners = (hub) => {
 
       pendingSubmissions.value = hubPending.map(a => {
         const task = myTasks.value.find(t => t.id === a.taskId) || {}
-        return { ...a, title: task.title || "Untitled", hours: task.hours ?? 0, points: task.points ?? 0, studentName: userMap.get(a.userId) || null, approving: false, rejecting: false }
+        return { ...a, title: task.title || "Untitled", hours: task.hours ?? 0, points: task.points ?? 0, studentName: userMap.get(a.userId) || null, approving: false, rejecting: false, rejectionReason: "" }
       })
     }
   )
@@ -249,7 +254,7 @@ const setupListeners = (hub) => {
   loadStats(hub)
 }
 
-// Load approved count and total hours given for this hub's stats cards
+// Get the number of approved count and total hours for the stats cards
 const loadStats = async (hub) => {
   try {
     const taskSnap     = await getDocs(query(collection(db, "tasks"), where("hub", "==", hub)))
@@ -264,14 +269,14 @@ const loadStats = async (hub) => {
   } catch (_) {}
 }
 
-// Check authentication and load the organisation's hub name from Firestore
+// Check authentication and load the organisation's hub name when the page loads
 onMounted(() => {
   onAuthStateChanged(getAuth(), async (user) => {
     if (!user) { router.push("/login"); loading.value = false; return }
     try {
       const snap = await getDoc(doc(db, "users", user.uid))
       const data  = snap.data() || {}
-      // Redirect if somehow a non-organisation account accesses this page
+      // Redirect non organisation accounts away from this page
       if (data.role !== "organisation") { router.push("/dashboard"); return }
       hubName.value = data.hub || "Your Hub"
       setupListeners(hubName.value)
@@ -280,10 +285,10 @@ onMounted(() => {
   })
 })
 
-// Clean up Firebase listeners when the component is destroyed
+/
 onUnmounted(() => { unsubscribeTasks?.(); unsubscribePending?.() })
 
-// Add a new task to Firestore — it will appear on the Hubs page instantly
+// Add a new task to Firestore for this hub
 const addTask = async () => {
   addTaskError.value = ""; addTaskSuccess.value = false
   if (!newTask.value.title.trim()) { addTaskError.value = "Please enter an activity title."; return }
@@ -297,7 +302,7 @@ const addTask = async () => {
       hours:       Number(newTask.value.hours),
       points:      Number(newTask.value.points),
       difficulty:  newTask.value.difficulty,
-      hub:         hubName.value, // automatically tagged with this organisation's hub name
+      hub:         hubName.value, 
       createdAt:   serverTimestamp()
     })
     newTask.value = { title: "", description: "", hours: "", points: "", difficulty: "Easy" }
@@ -314,12 +319,12 @@ const deleteTask = async (taskId) => {
   catch (e) { error.value = e.message }
 }
 
-// Approve a student's submission marks it as Approved and updates their hours and points
+// Approve a submission this  uses a transaction to update the assignment and student points together
 const approve = async (r) => {
   if (!confirm("Approve this submission?")) return
   error.value = ""; r.approving = true
   try {
-    // Use a transaction so the assignment status and user stats update together atomically
+    // Transaction ensures the approval and points update happen at the same time
     await runTransaction(db, async (tx) => {
       const snap = await tx.get(doc(db, "assignments", r.assignmentId))
       if (!snap.exists()) throw new Error("Assignment no longer exists.")
@@ -337,7 +342,7 @@ const approve = async (r) => {
   } catch (e) { error.value = e.message || "Unable to approve."; r.approving = false }
 }
 
-// Reject a student's submission sends it back to In Progress so they can resubmit
+// Reject a submission this resets status to In Progress so the student can resubmit
 const reject = async (r) => {
   error.value = ""; r.rejecting = true
   try {
@@ -346,10 +351,11 @@ const reject = async (r) => {
       if (!snap.exists()) throw new Error("Assignment no longer exists.")
       if (snap.data().status !== "Awaiting Approval") throw new Error("Already processed.")
       tx.update(doc(db, "assignments", r.assignmentId), {
-        status:       "In Progress",
-        evidenceText: null, // clear the evidence so the student can resubmit
-        feedbackText: null,
-        rejectedAt:   serverTimestamp()
+        status:          "In Progress",
+        evidenceText:    null, 
+        feedbackText:    null,
+        rejectionReason: r.rejectionReason || null, 
+        rejectedAt:      serverTimestamp()
       })
     })
     pendingSubmissions.value = pendingSubmissions.value.filter(x => x.assignmentId !== r.assignmentId)

@@ -1,4 +1,4 @@
-<!-- Login page for students and organisations -->
+<!-- Login page for both students and organisations -->
 <template>
   <div class="mx-auto max-w-5xl px-4 py-6 pt-20">
     <div class="mb-6">
@@ -8,7 +8,7 @@
 
     <div class="max-w-xl space-y-4">
 
-      <!-- Switch between student and organisation login -->
+      <!-- Buttons to switch between student and organisation login -->
       <div v-if="!showForgot" class="flex gap-3">
         <button
           class="flex-1 rounded-xl border px-4 py-3 text-sm font-semibold transition"
@@ -53,9 +53,9 @@
               class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
               :disabled="loading" @click="login"
             >
-              {{ loading ? 'Logging in…' : 'Login' }}
+              {{ loading ? 'Logging in...' : 'Login' }}
             </button>
-            <!-- Register only available for students — organisations contact us -->
+            <!-- Register only available for students and organisations need to email for account details -->
             <router-link
               v-if="loginType === 'student'" to="/register"
               class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
@@ -68,7 +68,7 @@
             Forgot password?
           </button>
 
-          <!-- Contact message for new organisations wanting to join -->
+          <!-- Message shown to organisations who dont have an account yet -->
           <div v-if="loginType === 'organisation'" class="mt-4 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5 text-sm text-blue-700">
             Don't have an account? If you are a volunteering organisation email us at
             <a href="mailto:karinkg1924@icloud.com" class="font-semibold underline hover:text-blue-900">karinkg1924@icloud.com</a>
@@ -76,7 +76,7 @@
           </div>
         </template>
 
-        <!-- Forgot password panel -->
+        <!-- Forgot password section -->
         <template v-else>
           <button class="mb-4 text-sm text-gray-500 hover:text-gray-700" @click="closeForgot">← Back to login</button>
           <h2 class="text-base font-semibold text-gray-900">Reset your password</h2>
@@ -93,7 +93,7 @@
             class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
             :disabled="sendingReset" @click="sendReset"
           >
-            {{ sendingReset ? 'Sending…' : 'Send reset email' }}
+            {{ sendingReset ? 'Sending...' : 'Send reset email' }}
           </button>
 
           <div v-if="resetSuccess" class="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
@@ -128,7 +128,7 @@ export default {
   },
 
   mounted() {
-    // Show success message passed from the Register page
+    // Show success message if the student just registered
     const msg = sessionStorage.getItem("registerSuccess")
     if (msg) {
       this.success = msg
@@ -145,16 +145,18 @@ export default {
         const cred = await signInWithEmailAndPassword(auth, this.email, this.password)
         const user = cred.user
 
-        // Block login if the student hasn't verified their email yet
-        if (!user.emailVerified) {
+        // Read the user's role from Firestore to decide where to redirect them
+        const snap = await getDoc(doc(db, "users", user.uid))
+        const role = (snap.data() || {}).role || "student"
+
+        // Students must verify their email before logging in 
+        if (role === "student" && !user.emailVerified) {
           this.error = "Please verify your email before logging in. Check your inbox for a verification link."
           await signOut(auth)
           return
         }
 
-        // Read the user's role from Firestore and redirect accordingly
-        const snap = await getDoc(doc(db, "users", user.uid))
-        const role = (snap.data() || {}).role || "student"
+        // Redirect to the correct dashboard based on role
         this.$router.push(role === "organisation" ? "/organisation" : "/dashboard")
       } catch (err) {
         if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
@@ -175,6 +177,7 @@ export default {
       this.showForgot = false; this.resetEmail = ""; this.resetError = ""; this.resetSuccess = false
     },
 
+    // Send a password reset email using Firebase Authentication
     async sendReset() {
       this.resetError = ""; this.resetSuccess = false
       if (!this.resetEmail.trim()) { this.resetError = "Please enter your email."; return }
