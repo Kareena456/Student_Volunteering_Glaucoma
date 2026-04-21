@@ -3,7 +3,7 @@ A full stack web application built with Vue.js and Firebase.
 
 ## Live Application
 The link is proived within the appendix of my report 
-Open in any browser there is no installation needed
+Open in any browser there is no installation needed this is hosted using netlify
 
 ## Test Credentials
 
@@ -28,11 +28,12 @@ To experience the complete registration process from scratch:
 10. Return to student dashboard to download certificate
 
 ### Organisation Accounts
-| Hub | Email | Password |
 
-Moorfields Eye Hospital | moorfields@glaucoma.com | 123456. |
-Sunrise Care Home | sunrise@glaucoma.com | 123456.|
-Hackney Community Vision Centre | hackney@glaucoma.com | 123456.|
+| Hub | Email | Password |
+|---|---|---|
+| Moorfields Eye Hospital | moorfields@glaucoma.com | 123456. |
+| Sunrise Care Home | sunrise@glaucoma.com | 123456. |
+| Hackney Community Vision Centre | hackney@glaucoma.com | 123456. |
 
 ## Running Locally
 1. Install Node.js from https://nodejs.org
