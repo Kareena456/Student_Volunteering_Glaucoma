@@ -1,55 +1,53 @@
-# Student Volunteering & Glaucoma Awareness
+# Glaucoma Student Volunteering Platform
+A full stack web application built with Vue.js and Firebase.
 
-Vue 3 + Vite app for student volunteering and glaucoma awareness, styled with Tailwind CSS.
+## Live Application
+The link is proived within the appendix of my report 
+Open in any browser there is no installation needed this is hosted using netlify
 
-## Tailwind quickstart
+## Test Credentials
 
-### How styles work
-- Tailwind is utility-first: you apply small classes directly to elements (e.g. `px-3 py-2 bg-slate-900`).
-- The build only includes classes used in `index.html` and `src/**/*`.
-- Tailwind base styles are loaded from `src/style.css` (see `@tailwind base/components/utilities`).
+### Option 1 Pre-made Student Account
+Use this to explore the platform straight away:
+Email: studentglaucoma@gmail.com 
+Password: 1234567.
+This account is already verified and has passed the quiz
+Tasks are unlocked and ready to enroll in
 
-### Common patterns in this repo
+### Option 2 — Full Student Journey
+To experience the complete registration process from scratch:
+1. Click Register on the platform
+2. Fill in your details must be 18 or over
+3. Use a real email address you have access to
+4. Check your inbox and click the verification link
+5. Log in with your email and password
+6. Take the glaucoma quiz and score 75% or above
+7. Browse hubs and enroll in volunteering tasks
+8. Submit evidence on your dashboard
+9. Log in as an organisation to approve your submission
+10. Return to student dashboard to download certificate
 
-#### Page container
-```
-class="mx-auto max-w-5xl px-4 py-6"
-```
+### Organisation Accounts
 
-#### Card / panel
-```
-class="rounded-xl border border-slate-800 bg-slate-900/60 p-4"
-```
+| Hub | Email | Password |
+|---|---|---|
+| Moorfields Eye Hospital | moorfields@glaucoma.com | 123456. |
+| Sunrise Care Home | sunrise@glaucoma.com | 123456. |
+| Hackney Community Vision Centre | hackney@glaucoma.com | 123456. |
 
-#### Primary button
-```
-class="rounded-lg border border-indigo-600 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
-```
+## Running Locally
+1. Install Node.js from https://nodejs.org
+2. Extract project zip file
+3. Open terminal in project folder
+4. Run: npm install
+5. Create.env file and add: VITE_OPENAI_API_KEY=your-key - API key provided in my report appendix 
+6. Run: npm run dev
+7. Open: http://localhost:5173
 
-#### Secondary button
-```
-class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-indigo-400"
-```
-
-#### Error box
-```
-class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200"
-```
-
-#### Success box
-```
-class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200"
-```
-
-### Recommended workflow
-- Start with layout: spacing + flex/grid + max widths.
-- Add surface styles: `bg-*`, `border`, `rounded-*`.
-- Add typography: `text-*`, `font-*`.
-- Add interaction: `hover:*`, `focus:*`, `transition`.
-- Add responsive tweaks: `md:*`, `lg:*`.
-
-## Development
-```
-npm install
-npm run dev
-```
+## Technologies
+- Vue.js 3 and Vue Router
+- Firebase Authentication and Cloud Firestore
+- Tailwind CSS
+- OpenAI API (AI Chatbot)
+- jsPDF (Certificate Generation)
+- Vite
